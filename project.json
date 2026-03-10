@@ -1,10 +1,29 @@
+
+
 {
-    "name": "新建项目",
+    "name": "yihuo",
     "main": "main.js",
-    "ignore": [
-        "build"
-    ],
-    "packageName": "com.example",
-    "versionName": "1.0.0",
-    "versionCode": 1
-}
+    "packageName": "com.yihuo.ddczqd", 
+    "versionCode": 1,
+    "versionName": "1.0.0",                               
+    "launchConfig": {
+      "hideLogs": true,                      
+      "displaySplash": true,                   
+      "splashText": "异火" ,
+      "splashIcon": "res/logo.png"
+ 
+    },
+    "icon": "res/logo.png", 
+    "abis": [],
+    "assets": [],
+    "build": {
+      "id": "9E998E52-1",
+      "number": 1,
+      "time": 1773123047880
+    },
+    "excludedDirs": [],
+    "useFeatures": [],
+    "permissions": [],
+    "libs": [],
+    "signatureScheme": "V1 + V2"
+  }
