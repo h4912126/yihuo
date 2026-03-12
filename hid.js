@@ -2,11 +2,12 @@ runtime.loadDex('hidv3.apk')
 //importClass(com.rainbl.HID);
 Hid = com.rainbl.HID()
 print(Hid)
+var hid = {}
 // 适用于 Android 12+
 if (context.checkSelfPermission(android.Manifest.permission.BLUETOOTH_CONNECT) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
     context.requestPermissions([android.Manifest.permission.BLUETOOTH_CONNECT, android.Manifest.permission.BLUETOOTH_SCAN], 1);
 }
-function HID_connect() {
+hid.HID_connect = function () {
     //初始化
     if (!Hid.initBluetooth(context)) {
         console.error("蓝牙未打开!")
@@ -35,7 +36,7 @@ function HID_connect() {
     
     return false
 }
-function HID_reg(key,wait){
+hid.HID_reg = function(key,wait){
     //认证密钥
     for (i = 1; i < 10; i++) {
         Hid.reg(key)
@@ -59,7 +60,7 @@ function HID_reg(key,wait){
     }
     return false
 }
-function HID_close(){
+ hid.HID_close = function(){
     if(Hid.BLEGatt!=null){
         console.info("完全关闭连接")
         Hid.BLEGatt.disconnect();
@@ -68,7 +69,7 @@ function HID_close(){
         
     }        
 }
-function HID_init(key,times){
+hid.HID_init = function(key,times){
     times = times || 1000
     if(!Hid.getConnectState()){
         if(HID_connect()){
@@ -124,7 +125,7 @@ function getRnd(a, b) {
   return Math.floor(Math.random() * (b - a + 1)) + a;
 }
 //HID滑动函数封装例子
-function HidSwipe(startX, startY, endX, endY, duration,按下时间,松开时间) {
+ hid.HidSwipe = function(startX, startY, endX, endY, duration,按下时间,松开时间) {
     duration  = duration || 500
     var steps = Math.ceil(duration / 10);
     var delay = duration / steps;
@@ -144,7 +145,7 @@ function HidSwipe(startX, startY, endX, endY, duration,按下时间,松开时间
     Hid.touchUp(endX, endY);
     sleep(100);
 }
-function HidSwipeRnd(startX, startY, endX, endY,duration) {
+ hid.HidSwipeRnd = function(startX, startY, endX, endY,duration) {
     var steps = Math.ceil(duration / 10);
     var delay = duration / steps;
 
@@ -164,7 +165,7 @@ function HidSwipeRnd(startX, startY, endX, endY,duration) {
     sleep(100);
 }
 //封装一个Home键
-function HidHome(){
+hid.HidHome = function(){
     intent = new android.content.Intent(android.content.Intent.ACTION_MAIN);
     intent.addCategory(android.content.Intent.CATEGORY_HOME);
     intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -174,27 +175,17 @@ function HidHome(){
 
 
 //调用例子/逻辑
-function HID_test(){
-    //require("Rain_HID.js") --其他文件调用用require
-    //这里换成你的注册码, 1000是等待速度 ,这个注册码不需要，函数内会自动获取
-    HID_init(``,1000)
-
-    for(let i=1;i<5;i++){
-        //HidSwipeRnd(10, 500, 800, 500,500)
-        Hid.tap(787,132)
-        sleep(500);
-        Hid.tap(870,1288)
-        sleep(500);
-        HidSwipe(10, 900, 800, 900,1000)	
-        sleep(1500);
-        Hid.back()
-        sleep(2000);
-    
-    }
-
+hid.onClick = function(x_1,y_1){
+    // 添加-5到5范围内的随机值
+    var randomX = Math.round(Math.random() * 11 - 5);
+    var randomY = Math.round(Math.random() * 11 - 5);
+    var finalX = x_1 + randomX;
+    var finalY = y_1 + randomY;
+    Hid.tap(finalX, finalY);
+    console.log("点击坐标: (" + finalX + ", " + finalY + ") (原始: (" + x_1 + ", " + y_1 + "), 随机偏移: (" + randomX + ", " + randomY + "))");
 }
 
-
+module.exports = hid; // 导出函数
 
 //main()//执行main
 
@@ -261,4 +252,3 @@ function scale(x, y) {
     return [rotatedX, rotatedY];
 }
 */
-

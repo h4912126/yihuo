@@ -99,5 +99,34 @@ node.findByText("子文本");  // 在子树中查找*/
 
 //print(nodes)
 
+szzl()
+
+// 检查服务状态
+if ( szzl.exists()){
+
+}
+else{
+    exit()
+}     // 是否为默认数字助理
+
+if ( szzl.isRunning()){
+
+}
+else{
+    exit()
+}     // 是否为默认数字助理
+szzl.isRunning();   // 服务是否运行
+
+// 开始计时
+var startTime = new Date().getTime();
+szzl.wakeUp()
+a = szzl.dumpNodes()
+// 结束计时
+var endTime = new Date().getTime();
+var executionTime = endTime - startTime;
+print(a)
+console.log("执行时间: " + executionTime + " 毫秒");
+
+
 
 

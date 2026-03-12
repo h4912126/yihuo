@@ -2,6 +2,8 @@
 
 var storage = storages.create('zhanguo');
 var zhixing = require('zhixing.js');
+szzl()
+
 ui.layout(
     <vertical w="*" h="*" windowSoftInputMode="adjustPan">
         <vertical h="40" bg="#1E9FFF">
@@ -60,11 +62,11 @@ ui.layout(
                 <text text="📍 终点关键词" textSize="16sp" textColor="#1e293b" marginBottom="12" />
                 <horizontal w="*" marginBottom="8">
                     <checkbox id="bqzdbox" text="不抢终点" marginRight="8" />
-                    <input id="zbjhs" w="*" h="40" hint="机场#火车站" hintColor="#94a3b8" gravity="center_vertical" />
+                    <input id="zbjhs" w="*" h="40" hint="" hintColor="#94a3b8" gravity="center_vertical" />
                 </horizontal>
                 <horizontal w="*">
                     <checkbox id="zqzdbox" text="只抢终点" marginRight="8" />
-                    <input id="zqzdwz" w="*" h="40" hint="软件园#医院" hintColor="#94a3b8" gravity="center_vertical" />
+                    <input id="zqzdwz" w="*" h="40" hint="" hintColor="#94a3b8" gravity="center_vertical" />
                 </horizontal>
             </vertical>
         </vertical>
@@ -141,8 +143,8 @@ function loadData() {
         jiange2: '800',
         shezhijuli: '5',
         shezhijiage: '20',
-        zbjhs: '机场#火车站',
-        zqzdwz: '软件园#医院'
+        zbjhs: '',
+        zqzdwz: ''
     };
     for (var key in inputs) {
         if (ui[key]) {
