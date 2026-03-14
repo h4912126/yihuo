@@ -135,7 +135,8 @@ function qd() {
     console.log('解析到的订单:', orders.length, '个');
     
     // 筛选符合配置的订单
-    for (let order of orders) {
+    for (let i = 0; i < orders.length; i++) {
+        let order = orders[i];
         let isValid = true;
         
         // 1. 筛选订单类型
@@ -210,8 +211,12 @@ function qd() {
         }
         
         // 找到第一个符合条件的订单
-        console.log('找到符合条件的订单:', order);
-        return order;
+        console.log('找到符合条件的订单，索引:', i, '订单:', order);
+        // 返回订单和索引
+        return {
+            order: order,
+            index: i
+        };
     }
     
     console.log('没有找到符合条件的订单');
@@ -375,12 +380,15 @@ function ocrRecognize() {
 // 创建缓存存储
 var ocrCache = storages.create('ocr_cache');
 
-function onClickByText(text, addname) {
-    var node = szzlSelector().text(text).findOne();
-    if (node) {
+function onClickByText(text, addname, index) {
+    var nodes = szzlSelector().text(text).find();
+    if (!nodes || nodes.length === 0) {
+        return;
     }
-    else {
-        return
+    // 如果不传index，默认取第一个
+    var node = nodes[typeof index === 'number' ? index : 0];
+    if (!node) {
+        return;
     }
 
     // 生成缓存键：text + addname
