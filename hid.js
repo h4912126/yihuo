@@ -1,6 +1,6 @@
 runtime.loadDex('hidv3.apk')
 //importClass(com.rainbl.HID);
-Hid = com.rainbl.HID()
+const Hid = com.rainbl.HID()
 print(Hid)
 var hid = {}
 // 适用于 Android 12+
@@ -72,7 +72,7 @@ hid.HID_reg = function(key,wait){
 hid.HID_init = function(key,times){
     times = times || 1000
     if(!Hid.getConnectState()){
-        if(HID_connect()){
+        if(hid.HID_connect()){
             log("蓝牙名:",Hid.getName())
         }else{
             console.error("----->蓝牙初始化失败")

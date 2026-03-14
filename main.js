@@ -1,7 +1,9 @@
 'ui';
 
 var storage = storages.create('zhanguo');
+// 加载zhixing.js文件
 var zhixing = require('zhixing.js');
+var hid = require('hid.js')
 szzl()
 
 ui.layout(
@@ -199,7 +201,7 @@ ui.queding.on('click', function () {
 
     // 启动线程并保存引用
     zhixingThread = threads.start(function () {
-        zhixing.zhixing();
+        zhixing.zhixing(hid);
     });
     try{
         createFloatyButton();
