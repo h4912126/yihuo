@@ -2,9 +2,147 @@
 var zhixing = {}
 // 全局配置变量
 var config = null;
-var hid = null;
 var findMode = 0
 var delaysz = 500
+var clickMode = 0 // 1是蓝牙， 0是OTG
+
+var Hid = null;
+// 参数，0是usb模式，  1是蓝牙模式
+function HID_init(hid_type) {
+    console.log("初始化fishhid开始")
+    
+    // 检查是否已经初始化过
+    if (global.hidInitialized) {
+        console.log("HID已经初始化，跳过")
+        return true
+    }
+    
+    if (!Hid) {
+        Hid = HidBridge();
+        console.log("HidBridge初始化成功")
+    }
+    
+    // 尝试初始化libnetwork-lib.so
+    if (!global.libInitialized) {
+        try {
+            if (!Hid.initialize(context, files.cwd() + "/lib/arm64-v8a/libnetwork-lib.so")) {
+                console.log("Hid.initialize失败，可能是共享库已加载")
+                // 即使初始化失败，也尝试继续执行，因为可能是共享库已经加载
+            }
+            global.libInitialized = true;
+            console.log("libnetwork-lib.so初始化成功")
+        } catch (e) {
+            console.error("Hid.initialize异常:", e);
+            // 捕获异常，继续执行，因为可能是共享库已经加载
+            global.libInitialized = true;
+        }
+    }
+    
+    if (hid_type == 1) {
+        var result = Hid.init("bluetooth", 10000);
+        if (result) {
+            global.hidInitialized = true;
+        }
+        return result;
+    } else {
+        var result = Hid.init("usb", 10000);
+        if (result) {
+            global.hidInitialized = true;
+        }
+        return result;
+    }
+}
+
+function GetMac() {
+    return Hid.getMac()
+}
+
+function Home() {
+    return Hid.sendCommand("home")
+}
+
+function Recents() {
+    return Hid.sendCommand("recents")
+}
+
+function Back() {
+    return Hid.sendCommand("back")
+}
+
+function Back1() {
+    return Hid.sendCommand("back1")
+}
+
+function Back2() {
+    return Hid.sendCommand("back2")
+}
+
+function Paste() {
+    return Hid.sendCommand("key_paste")
+}
+
+function ChargeOn() {
+    return Hid.sendCommand("charge:1")
+}
+
+function ChargeOff() {
+    return Hid.sendCommand("charge:0")
+}
+
+function Click(x, y) {
+    const delay1 = Math.floor(Math.random() * (50 - 20 + 1)) + 20;
+    const delay2 = Math.floor(Math.random() * (50 - 20 + 1)) + 20;
+    return Hid.sendCommand(`tap:${x},${y},${delay1},${delay2},1,0,0`);
+}
+
+// 百分比点击，传入0.0-1.0 之间的范围
+function ClickPersent(x, y) {
+    const delay1 = Math.floor(Math.random() * (50 - 20 + 1)) + 20;
+    const delay2 = Math.floor(Math.random() * (50 - 20 + 1)) + 20;
+    return Hid.sendCommand(`tap:${x},${y},${delay1},${delay2},1,0,1`);
+}
+
+// 滑动， 加速模式为慢快慢， 先慢慢加速到中间速度最快，然后逐渐减速到末尾
+function Swipe1(x1, y1, x2, y2) {
+    return Hid.sendCommand(`swipe:${x1},${y1},${x2},${y2},0,0`);
+}
+
+// 滑动， 加速模式为慢快， 滑动逐渐加速到末尾
+function Swipe2(x1, y1, x2, y2) {
+    return Hid.sendCommand(`swipe:${x1},${y1},${x2},${y2},0,2`);
+}
+
+// 百分比滑动， 加速模式为慢快慢， 先慢慢加速到中间速度最快，然后逐渐减速到末尾
+function Swipe1Persent(x1, y1, x2, y2) {
+    return Hid.sendCommand(`swipe:${x1},${y1},${x2},${y2},1,0`);
+}
+
+// 百分比滑动， 加速模式为慢快， 滑动逐渐加速到末尾
+function Swipe2Persent(x1, y1, x2, y2) {
+    return Hid.sendCommand(`swipe:${x1},${y1},${x2},${y2},1,2`);
+}
+
+// HID初始化函数
+function initHID() {
+    // 检查是否已经初始化过
+    if (global.hidInitialized) {
+        console.log("HID已初始化，跳过重复初始化");
+        return true;
+    }
+
+    if (!HID_init(clickMode)) {  //初始化为蓝牙模式
+        console.log("初始化失败")
+        sleep(1000)
+        exit()
+    }
+    console.log("mac:" + GetMac());
+
+    // 标记为已初始化
+    global.hidInitialized = true;
+    return true;
+}
+
+
 // 初始化配置
 function initConfig() {
     if (config) return config;
@@ -59,18 +197,13 @@ function initConfig() {
     return config;
 }
 
-zhixing.zhixing = function zhixing(h) {
-    console.log("执行了");
-    // 检查hid是否为空
-    if (!h) {
-        console.log('hid对象为空');
-        return;
-    }
-    hid = h;
+zhixing.zhixing = function zhixing() {
+
+    // 初始化HID
+    initHID();
+
     // 初始化配置
     initConfig();
-
-    hid.HID_init()
 
     if (szzl.exists()) {
 
@@ -89,14 +222,17 @@ zhixing.zhixing = function zhixing(h) {
         sleep(1000)
         exit()
     }     // 是否为默认数字助理
-    if (initOCR()) {
+    if (findMode == 1) {
+        if (initOCR()) {
 
+        }
+        else {
+            console.log('ocr初始化失败:');
+            sleep(1000)
+            exit()
+        }
     }
-    else {
-        console.log('ocr初始化失败:');
-        sleep(1000)
-        exit()
-    }
+
     // 在这里使用配置数据进行抢单逻辑
     app.launch('com.sdu.didi.gsui');
     // 计算配置的两个刷新时间之间的随机值作为刷新间隔
@@ -488,7 +624,7 @@ function onClickByText(text, addname, index) {
         let cachedData = ocrCache.get(cacheKey, null);
         if (cachedData && cachedData.mode === 'ocr') {
             console.log('使用OCR缓存数据点击:', cachedData);
-            hid.onClick(cachedData.x, cachedData.y);
+            Click(cachedData.x, cachedData.y);
             return true;
         }
     }
@@ -500,7 +636,8 @@ function onClickByText(text, addname, index) {
         if (node) {
             let x = node.centerX();
             let y = node.centerY();
-            hid.onClick(x, y);
+
+            Click(x, y)
             console.log('节点点击坐标:', { x: x, y: y });
             return true
         } else {
@@ -515,9 +652,9 @@ function onClickByText(text, addname, index) {
             let ocrResult = ocrResults[i];
             if (ocrResult.label.includes(text)) {
                 let rect = ocrResult.bounds;
-                let x = (rect.left + 70)
+                let x = (rect.left + 50)
                 let y = (rect.top + rect.bottom) / 2;
-                hid.onClick(x, y);
+                Click(x, y)
                 // 保存到缓存
                 ocrCache.put(cacheKey, { x: x, y: y, mode: 'ocr', text: ocrResult.label, addname: addname });
                 console.log('OCR识别成功并缓存:', { x: x, y: y, text: ocrResult.label, cacheKey: cacheKey });

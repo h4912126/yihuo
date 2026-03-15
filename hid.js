@@ -1,4 +1,6 @@
-runtime.loadDex('hidv3.apk')
+//runtime.loadDex('hidv3.apk')
+runtime.loadDex('fishhid.apk')
+
 //importClass(com.rainbl.HID);
 const Hid = com.rainbl.HID()
 print(Hid)

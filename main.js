@@ -1,9 +1,29 @@
 'ui';
+var versionChecker = require('versioncheck.js');
+// 执行版本检测
+versionChecker.checkVersion();
+
+// 检查是否已经加载过fishhid.apk
+if (!global.fishHidLoaded) {
+    print("加载fishhid.apk")
+    try{
+        runtime.loadDex('fishhid.apk');
+        importClass(com.fishhidpro.hid.HidBridge);
+        global.fishHidLoaded = true;
+        print("加载fishhid.apk成功")
+    }
+    catch(e){
+        print("加载fishhid.apk失败")
+        print(e)
+    }
+}
+else{
+    print("fishhid.apk已加载")
+}   
 
 var storage = storages.create('zhanguo');
 // 加载zhixing.js文件
 var zhixing = require('zhixing.js');
-var hid = require('hid.js')
 szzl()
 
 ui.layout(
@@ -201,7 +221,7 @@ ui.queding.on('click', function () {
 
     // 启动线程并保存引用
     zhixingThread = threads.start(function () {
-        zhixing.zhixing(hid);
+        zhixing.zhixing();
     });
     try{
         createFloatyButton();
