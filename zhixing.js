@@ -3,7 +3,7 @@ var zhixing = {}
 // 全局配置变量
 var config = null;
 var findMode = 0
-var delaysz = 500
+var delaysz = 300
 var clickMode = 0 // 1是蓝牙， 0是OTG
 
 var Hid = null;
@@ -204,24 +204,6 @@ zhixing.zhixing = function zhixing() {
 
     // 初始化配置
     initConfig();
-
-    if (szzl.exists()) {
-
-    }
-    else {
-        console.log('请开启数字助理服务:');
-        sleep(1000)
-        exit()
-    }     // 是否为默认数字助理
-
-    if (szzl.isRunning()) {
-
-    }
-    else {
-        console.log('请开启数字助理服务:');
-        sleep(1000)
-        exit()
-    }     // 是否为默认数字助理
     if (findMode == 1) {
         if (initOCR()) {
 
@@ -247,9 +229,9 @@ zhixing.zhixing = function zhixing() {
 
     while (true) {
         if (waitHome()) {
-            szzl.wakeUp()
+            wakeUp()
             sleep(delaysz)
-            var allInfoText = szzl.dumpNodes()
+            var allInfoText = dumpNodes()
             var orderInfo = qd(allInfoText)
             if (orderInfo) {
                 console.log('符合条件的订单:', orderInfo);
@@ -261,7 +243,7 @@ zhixing.zhixing = function zhixing() {
         var currentTime = new Date().getTime();
         var elapsedTime = currentTime - lastRefreshTime;
 
-        console.log('已过时间:', elapsedTime, '毫秒');
+        //console.log('已过时间:', elapsedTime, '毫秒');
 
         // 如果超过了刷新间隔，执行刷新操作
         if (elapsedTime >= refreshInterval) {
@@ -280,9 +262,10 @@ zhixing.zhixing = function zhixing() {
 
 }
 
+
 function waitHome() {
     while (true) {
-        szzl.wakeUp()
+        wakeUp()
         sleep(delaysz)
         guanbishaixuan()
         node2 = szzlSelector().text("规则").findOne()
@@ -310,13 +293,13 @@ function guanbishaixuan() {
 
 
 function shuaxin() {
-    szzl.wakeUp()
+    wakeUp()
     sleep(delaysz)
     var node = szzlSelector().text("筛选").findOne()
     if (node) {
         if (onClickByText("筛选")) {
             sleep(1000)
-            szzl.wakeUp()
+            wakeUp()
             sleep(delaysz)
             guanbishaixuan()
         }
@@ -458,7 +441,7 @@ function jiexi(text) {
         let line = lines[i].trim();
 
         // 检查是否开始新订单
-        if (line.includes('TextView') && line.includes('text="出发时间"')) {
+        if (line.includes('text="出发时间"')) {
             // 如果已有订单，保存并开始新订单
             if (currentOrder) {
                 orders.push(currentOrder);
@@ -468,11 +451,11 @@ function jiexi(text) {
         }
 
         // 提取距离信息
-        if (orderStarted && line.includes('TextView') && line.includes('text="距您"')) {
+        if (line.includes('text="距您"')) {
             // 查找下一个TextView
             for (let j = i + 1; j < lines.length; j++) {
                 let nextLine = lines[j].trim();
-                if (nextLine.includes('TextView') && nextLine.includes('text="')) {
+                if (nextLine.includes('text="')) {
                     let distanceMatch = nextLine.match(/text="([^"]+)"/);
                     if (distanceMatch) {
                         currentOrder['距离'] = distanceMatch[1];
@@ -483,11 +466,11 @@ function jiexi(text) {
         }
 
         // 提取价格信息
-        if (orderStarted && line.includes('TextView') && line.includes('text="元"')) {
+        if (line.includes('text="元"')) {
             // 查找前一个TextView
             for (let j = i - 1; j >= 0; j--) {
                 let prevLine = lines[j].trim();
-                if (prevLine.includes('TextView') && prevLine.includes('text="')) {
+                if (prevLine.includes('text="')) {
                     let priceMatch = prevLine.match(/text="([^"]+)"/);
                     if (priceMatch) {
                         currentOrder['价格'] = priceMatch[1];
@@ -498,7 +481,7 @@ function jiexi(text) {
         }
 
         // 提取目的地信息
-        if (orderStarted && line.includes('TextView') && line.includes('text="') && line.includes('|')) {
+        if (orderStarted && line.includes('text="') && line.includes('|')) {
             let destinationMatch = line.match(/text="([^"]+)"/);
             if (destinationMatch) {
                 currentOrder['目的地'] = destinationMatch[1];
@@ -506,7 +489,7 @@ function jiexi(text) {
         }
 
         // 提取类型信息
-        if (orderStarted && line.includes('TextView') && line.includes('text="')) {
+        if (orderStarted && line.includes('text="')) {
             // 匹配类型文本，包括"特惠快车"、"随心接实时单"等
             let typeMatch = line.match(/text="([^"]+)"/);
             if (typeMatch) {
@@ -518,7 +501,7 @@ function jiexi(text) {
         }
 
         // 提取抢单坐标
-        if (orderStarted && line.includes('TextView') && line.includes('text="抢单"')) {
+        if (orderStarted && line.includes('text="抢单"')) {
             let rectMatch = line.match(/Rect\(([^\)]+)\)/);
             if (rectMatch) {
                 // 优化抢单坐标格式：删除"-"，用","分割
@@ -579,11 +562,7 @@ function ocrRecognize() {
     }
 
     try {
-        if (!requestScreenCapture()) {
-            console.error('请求截图权限失败');
-            return [];
-        }
-
+ 
         let img = captureScreen();
         if (!img) {
             console.error('截图失败');
@@ -605,7 +584,6 @@ var ocrCache = storages.create('ocr_cache');
 function onClickByText(text, addname, index) {
     print(text)
     var nodes = szzlSelector().text(text).find();
-    print(nodes)
     if (!nodes || nodes.length === 0) {
         return;
     }
@@ -634,8 +612,9 @@ function onClickByText(text, addname, index) {
         console.log('使用节点查找文本:', text);
 
         if (node) {
-            let x = node.centerX();
-            let y = node.centerY();
+            var bounds = node.bounds()
+            let x = bounds.centerX();
+            let y = bounds.centerY();
 
             Click(x, y)
             console.log('节点点击坐标:', { x: x, y: y });

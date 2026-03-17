@@ -4,81 +4,56 @@ function checkVersion() {
     console.log('开始检测版本...');
     
     // 创建一个信号量，用于等待子线程完成
-    var semaphore = threads.disposable();
-    var shouldContinue = false;
-    
+
+    var shouldContinue = 0;
+
     // 在子线程中执行网络操作
     threads.start(function() {
-        try {
-            // 本地版本号
-            var localVersion = '1.0.4'; // 这里可以从本地文件或存储中读取
+        var localVersion = '1.0.4'; // 这里可以从本地文件或存储中读取
             
-            // 服务器版本信息URL
-            var versionUrl = 'http://47.109.196.181/qdwversion.txt';
+        // 服务器版本信息URL
+        var versionUrl = 'http://47.109.196.181/qdwversion.txt';
+        
+        // 下载版本信息
+        var response = http.get(versionUrl);
+        if (response && response.statusCode === 200) {
+            var serverVersion = response.body.string().trim();
+            console.log('本地版本:', localVersion);
+            console.log('服务器版本:', serverVersion);
             
-            // 下载版本信息
-            var response = http.get(versionUrl);
-            if (response && response.statusCode === 200) {
-                var serverVersion = response.body.string().trim();
-                console.log('本地版本:', localVersion);
-                console.log('服务器版本:', serverVersion);
+            // 对比版本号
+            if (compareVersions(localVersion, serverVersion) < 0) {
+                // 不是最新版本，需要下载
+                console.log('发现新版本，开始下载...');
+                toast('发现新版本，正在下载...');
                 
-                // 对比版本号
-                if (compareVersions(localVersion, serverVersion) < 0) {
-                    // 不是最新版本，需要下载
-                    console.log('发现新版本，开始下载...');
-                    toast('发现新版本，正在下载...');
-                    
-                    // 下载APK
-                    var apkUrl = 'http://47.109.196.181/qdw.apk';
-                    
-                    // 直接使用系统浏览器打开下载链接，避免使用网络库
-                    app.startActivity({
-                        action: 'android.intent.action.VIEW',
-                        data: apkUrl
-                    });
-                    console.log('已启动系统浏览器下载');
-                    toast('已启动浏览器下载，请完成下载后安装');
-                    exit();
-                } else {
-                    console.log('当前已是最新版本');
-                    // 版本一致，设置shouldContinue为true
-                    shouldContinue = true;
-                }
+                // 下载APK
+                var apkUrl = 'http://47.109.196.181/qdw.apk';
+                
+                // 直接使用系统浏览器打开下载链接，避免使用网络库
+                app.startActivity({
+                    action: 'android.intent.action.VIEW',
+                    data: apkUrl
+                });
+                console.log('已启动系统浏览器下载');
+                toast('已启动浏览器下载，请完成下载后安装');
+                exit();
             } else {
-                console.error('获取版本信息失败:', response ? response.statusCode : '无响应');
-                // 获取版本信息失败时，默认继续执行
-                shouldContinue = true;
+                console.log('当前已是最新版本');
+                // 版本一致，设置shouldContinue为true
+                shouldContinue = 1;
             }
-        } catch (e) {
-            console.error('版本检测失败:', e);
-            // 检测失败时，默认继续执行
-            shouldContinue = true;
-        } finally {
-            // 无论如何都释放信号量
-            semaphore.setAndNotify(shouldContinue);
+        
+        }
+        else{
+            shouldContinue = 2;
+            exit();
         }
     });
     
-    // 等待子线程完成，添加超时处理
-    var result;
-    try {
-        // 等待最多10秒
-        result = semaphore.blockedGet(10000);
-        console.log('版本检测完成，结果:', result);
-        if (!result) {
-            console.error('版本检测超时');
-            // 超时时，默认继续执行
-            exit();
-        }
-    } catch (e) {
-        console.error('等待版本检测完成时发生错误:', e);
-        // 发生错误时，默认继续执行
-        exit();
-    }
-    
+
     // 返回检测结果
-    return result;
+    return shouldContinue;
 }
 
 // 请求网络权限

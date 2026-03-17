@@ -53,7 +53,27 @@ node.findByText("子文本");  // 在子树中查找*/
         ::dumpNodes.name,
         ::printNodes.name,
     )
-    
+    attributes["className"] = className() ?: ""
+        attributes["text"] = text() ?: ""
+        attributes["desc"] = desc() ?: ""
+        attributes["id"] = id() ?: ""
+        attributes["packageName"] = packageName() ?: ""
+        attributes["bounds"] = bounds()
+        attributes["boundsInParent"] = boundsInParent()
+        attributes["depth"] = depth()
+        attributes["childCount"] = childCount()
+        attributes["clickable"] = clickable()
+        attributes["longClickable"] = longClickable()
+        attributes["checkable"] = checkable()
+        attributes["checked"] = checked()
+        attributes["focusable"] = focusable()
+        attributes["focused"] = focused()
+        attributes["selected"] = selected()
+        attributes["enabled"] = enabled()
+        attributes["scrollable"] = scrollable()
+        attributes["editable"] = editable()
+        attributes["visibleToUser"] = visibleToUser()
+        return attributes
     override val globalAssignmentFunctions = listOf(
         ::szzlSelector.name,
         ::szzlText.name,
@@ -100,21 +120,39 @@ node.findByText("子文本");  // 在子树中查找*/
 //print(nodes)
 
 szzl()
-
-// 检查服务状态
-if (szzl.exists()) {
-
+wakeUp()
+sleep(100)
+// 计算Rect中心点的函数
+function getRectCenter(rectStr) {
+    // 解析Rect字符串，格式如 "Rect(934, 216 - 1186, 510)"
+    var match = rectStr.match(/Rect\((\d+),\s*(\d+)\s*-\s*(\d+),\s*(\d+)\)/);
+    if (!match) {
+        print("Rect格式解析失败:", rectStr);
+        return null;
+    }
+    
+    var x1 = parseInt(match[1]);
+    var y1 = parseInt(match[2]);
+    var x2 = parseInt(match[3]);
+    var y2 = parseInt(match[4]);
+    
+    // 计算中心点
+    var centerX = (x1 + x2) / 2;
+    var centerY = (y1 + y2) / 2;
+    
+    return {
+        x: Math.round(centerX),
+        y: Math.round(centerY),
+        x1: x1,
+        y1: y1,
+        x2: x2,
+        y2: y2
+    };
 }
-else {
-    exit()
-}     // 是否为默认数字助理
 
-if (szzl.isRunning()) {
+print(dumpNodes())
 
-}
-else {
-    exit()
-}     // 是否为默认数字助理
+   // 是否为默认数字助理
 /*szzl.isRunning();   // 服务是否运行
 
 // 开始计时
@@ -130,8 +168,3 @@ var executionTime = endTime - startTime;
 print(node2)
 print(node3)
 console.log("执行时间: " + executionTime + " 毫秒");*/
-        var versionUrl = 'http://47.109.196.181/qdwversion.txt';
-        
-        // 下载版本信息
-        var response = http.get(versionUrl);
-        print(response.body.string().trim())
